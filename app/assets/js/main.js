@@ -1,32 +1,12 @@
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
-//canvas
-var xCanvas = 600;
-var yCanvas = 600;
-
-function setup(){
-    createCanvas(xCanvas,yCanvas);
+function preload() {
 }
 
-
-function draw(){
-    background(131,116,103);
-    //TODO
+function create() {
+    var lab = new labyrinth(500, 500, 20);
+    lab.draw();
 }
 
-/*function keyPressed(){
-    if (keyCode==68){//lettre D
-        //TODO
-    }
+function update() {
 }
-
-function keyReleased(){
-    //TODO
-}*/
-
-
-
-
-
-
-
-
