@@ -6,7 +6,7 @@ function preload() {
 
 function create() {
     //var timer = Timer(x, y, color, size)
-    var lab = new labyrinth(500, 500, 20);//(x, y, case)
+    var lab = new labyrinth(50, 50, 500, 500, 20);//(x, y, hauteur, largeur, case)
     lab.draw();
     //STEP 1
         //var joueur = Joueur(name, x, y, key1, key2, key3, key4, size, color)
