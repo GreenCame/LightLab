@@ -11,9 +11,6 @@ class Timer {
         this.textzerosecond = 0;
         this.textzerominute = 0;
         this.update = function(){
-            if(this.isTimeFinish()){
-                this.restart();
-            }
             this.second++;
             if (this.second > 59) {
                 this.updateminute();
@@ -54,12 +51,12 @@ class Timer {
 
     get() {
         return [
-            this.minute,
-            this.second
+            this.textzerominute + this.minute,
+            this.textzerosecond + this.second
         ];
     }
 
     draw() {
-        game.debug.text("Timer  " + this.textzerominute + this.minute + ":" + this.textzerosecond + this.second, this.x,this.y);//.addColor(this.color,0);
+        game.debug.text("Time  " + this.textzerominute + this.minute + ":" + this.textzerosecond + this.second, this.x,this.y);//.addColor(this.color,0);
     }
 }

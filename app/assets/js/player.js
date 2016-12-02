@@ -1,7 +1,4 @@
 class Player {
-
-    //var player;
-
     constructor (name, color, size, speed, x, y, halo) {
         this.name = name;
         this.color = color;
@@ -10,12 +7,19 @@ class Player {
         this.y = y;
         this.speed = speed;
         this.halo = halo;
+        this.haloBase = halo;
+        this.essais = 1;
+        this.reussite = 0;
+        this.create(x, y);
     }
 
-    create() {
-        this.player = game.add.sprite( this.x ,  this.y , 'mushroom');
+    create(x, y) {
+        //sprite
+        this.player = game.add.sprite( x ,  y , 'mushroom');
         this.player.name = 'mushroom';
-        this.player.scale.setTo(0.05, 0.05);
+        //this.player.scale.setTo(0.05, 0.05);
+
+        //phaser
         game.physics.enable(this.player, Phaser.Physics.ARCADE);
         game.physics.arcade.enableBody(this.player);
 
@@ -26,17 +30,18 @@ class Player {
         return this.player;
     }
 
-    getHalo (value) {
+    getHalo() {
        return this.halo;
     }
     setHalo (value) {
         this.halo = value;
     }
-    replace (x, y) {
-        this.player.body.x = x;
-        this.player.body.y = y;
-    }
 
+    replace (x, y) {
+        this.essais++;
+        this.create(x,y);
+        this.setHalo(this.haloBase);
+    }
 
     finish(time, save){
         this.player.body.velocity.x = 0;
@@ -45,6 +50,7 @@ class Player {
         this.setHalo(1000);
 
         if(save){
+            this.reussite++;
             this.saveTime(time);
         }
     }
@@ -56,8 +62,6 @@ class Player {
     }
 
     move() {
-        //this.player.body.setZeroVelocity();
-
         this.player.body.velocity.x = 0;
         this.player.body.velocity.y = 0;
         if (this.cursors.left.isDown) {
@@ -76,13 +80,19 @@ class Player {
         return this.player;
     }
 
+    //save time
     saveTime(time) {
         if(this.time === undefined){
             this.time = time;
         } else {
-            if(time[0]<this.time[0] && time[1]<this.time[1]){
+            if(time[0]<=this.time[0] && time[1]<this.time[1]){
                 this.time = time;
             }
         }
+    }
+
+    //info joueur
+    info(x, y){
+        game.debug.text("Reussite : " + this.reussite + "/" + this.essais, x, y);
     }
 }
