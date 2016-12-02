@@ -1,16 +1,17 @@
 class labyrinth {
-    constructor(x, y, hauteur, largeur, incrementation) {
+    constructor(x, y, hauteur, largeur, incrementation, epaisseur) {
         this.hauteur = hauteur;
         this.largeur = largeur;
         this.incrementation = incrementation;
+        this.epaisseur = epaisseur;
         this.xBase = x;
         this.yBase = y;
-        this.x = 0;
-        this.y = 0;
+        this.x = x;
+        this.y = y;
         this.labyrinth = this.createArray();
         this.sortie = this.randomSortie();
         this.track = this.findTrack();
-        //constructLabyrinth();
+        this.findExit = false;
     }
 
     createArray(){
@@ -27,14 +28,14 @@ class labyrinth {
                 tab.push({'id':u, 'first':first, 'last':last, 'x':this.x - this.incrementation/2 , 'y': this.y - this.incrementation/2 });
                 first = false;
             }
-            this.x = 0;
+            this.x = this.xBase;
         }
         return tab;
     }
 
     findTrack(){
         //var position = 12;
-        var position = Math.floor((this.labyrinth.length+1)/2);
+        var position = this.getMiddle();
         var track = [];
         track.push(position);
         var found = false;
@@ -70,100 +71,123 @@ class labyrinth {
     }
 
     draw(){
-        var graphics = game.add.graphics(this.xBase, this.yBase);
-        graphics.lineStyle(3, 0xA44040, 1);
-        /*var indexTrack;
+        var horizontalBD = game.add.bitmapData( this.incrementation, this.epaisseur ); //width, height
+        var verticalBD = game.add.bitmapData( this.epaisseur, this.incrementation ); //width, height
+        horizontalBD.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alpha
+        verticalBD.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alph
+
+        //debug track
+        /*var horizontalBD2 = game.add.bitmapData( this.incrementation, this.epaisseur ); //width, height
+        var verticalBD2 = game.add.bitmapData( this.epaisseur, this.incrementation ); //width, height
+        horizontalBD2.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alpha
+        verticalBD2.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alpha*/
+        this.groupLab = game.add.group();
+        this.groupLab.enableBody = true;
+
         for(var i = 0; i<this.getTotalNb() ; i++){
-            var x = this.labyrinth[i].x - this.incrementation/2;
-            var y = this.labyrinth[i].y - this.incrementation/2;
-            graphics.moveTo(x, y);
-        }*/
+            var x = this.labyrinth[i].x - this.incrementation/2 - this.epaisseur/2;
+            var y = this.labyrinth[i].y - this.incrementation/2 - this.epaisseur/2;
+
+            if(this.track.indexOf(this.labyrinth[i].id) == -1){
+                if(!this.checkRowBefore(i)){
+                    var r = this.groupLab.create(x, y, horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[i].last || this.randomLine1()){
+                    var r = this.groupLab.create(this.up(x), y, verticalBD );
+                    r.body.immovable = true;
+                }
+                if(!this.checkRowAfter(i)|| this.randomLine1()){
+                    var r = this.groupLab.create(x, this.up(y), horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[i].first){
+                    var r = this.groupLab.create(x, y, verticalBD );
+                    r.body.immovable = true;
+                }
+            }
+        }
+
+        //track
         for(var i = 0; i<this.track.length ; i++){
-            var x = this.labyrinth[this.track[i]].x - this.incrementation/2;
-            var y = this.labyrinth[this.track[i]].y - this.incrementation/2;
-            graphics.moveTo(x, y);
+            var x = this.labyrinth[this.track[i]].x - this.incrementation/2 - this.epaisseur/2;
+            var y = this.labyrinth[this.track[i]].y - this.incrementation/2 - this.epaisseur/2;
             if(i==0){
-                if(this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i+1]].id)graphics.lineTo(this.up(x), y);
-                graphics.moveTo(this.up(x), y);
-                if(this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i+1]].id)graphics.lineTo(this.up(x), this.up(y));
-                graphics.moveTo(this.up(x), this.up(y));
-                if(this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i+1]].id)graphics.lineTo(x, this.up(y));
-                graphics.moveTo(x, this.up(y));
-                if(this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i+1]].id) graphics.lineTo(x, y);
+                if(this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i+1]].id){
+                    var r = this.groupLab.create(x, y, horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i+1]].id){
+                    var r = this.groupLab.create(this.up(x), y, verticalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i+1]].id){
+                    var r = this.groupLab.create(x, this.up(y), horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i+1]].id){
+                    var r = this.groupLab.create(x, y, verticalBD );
+                    r.body.immovable = true;
+                }
             } else if (i+1 == this.track.length){
-                if(this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i-1]].id && !this.checkRowBefore(this.labyrinth[this.track[i]].id) && this.labyrinth[this.track[i]].first && this.labyrinth[this.track[i]].last)graphics.lineTo(this.up(x), y);
-                graphics.moveTo(this.up(x), y);
-                if(this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i-1]].id && !this.labyrinth[this.track[i-1]].last)graphics.lineTo(this.up(x), this.up(y));
-                graphics.moveTo(this.up(x), this.up(y));
-                if(this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i-1]].id && !this.checkRowAfter(this.labyrinth[this.track[i]].id) && this.labyrinth[this.track[i]].first && this.labyrinth[this.track[i]].last)graphics.lineTo(x, this.up(y));
-                graphics.moveTo(x, this.up(y));
-                if(this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i-1]].id && !this.labyrinth[this.track[i-1]].first) graphics.lineTo(x, y);
+                if(this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i-1]].id && !this.checkRowBefore(this.labyrinth[this.track[i]].id) && this.labyrinth[this.track[i]].first && this.labyrinth[this.track[i]].last){
+                    var r = this.groupLab.create(x, y, horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i-1]].id && !this.labyrinth[this.track[i-1]].last){
+                    var r = this.groupLab.create(this.up(x), y, verticalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i-1]].id && !this.checkRowAfter(this.labyrinth[this.track[i]].id) && this.labyrinth[this.track[i]].first && this.labyrinth[this.track[i]].last){
+                    var r = this.groupLab.create(x, this.up(y), horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i-1]].id && !this.labyrinth[this.track[i-1]].first){
+                    var r = this.groupLab.create(x, y, verticalBD );
+                    r.body.immovable = true;
+                }
             }
             else {
-                if(this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i-1]].id)graphics.lineTo(this.up(x), y);
-                graphics.moveTo(this.up(x), y);
-                if(this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i-1]].id)graphics.lineTo(this.up(x), this.up(y));
-                graphics.moveTo(this.up(x), this.up(y));
-                if(this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i-1]].id)graphics.lineTo(x, this.up(y));
-                graphics.moveTo(x, this.up(y));
-                if(this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i-1]].id) graphics.lineTo(x, y);
+                if(this.randomLine2() && this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id-this.getColNb()!=this.labyrinth[this.track[i-1]].id || !this.checkRowBefore(this.labyrinth[this.track[i]].id)){
+                    var r = this.groupLab.create(x, y, horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.randomLine2() && this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id+1!=this.labyrinth[this.track[i-1]].id || this.labyrinth[this.track[i]].last){
+                    var r = this.groupLab.create(this.up(x), y, verticalBD );
+                    r.body.immovable = true;
+                }
+                if(this.randomLine2() && this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id+this.getColNb()!=this.labyrinth[this.track[i-1]].id || !this.checkRowAfter(this.labyrinth[this.track[i]].id)){
+                    var r = this.groupLab.create(x, this.up(y), horizontalBD );
+                    r.body.immovable = true;
+                }
+                if(this.randomLine2() && this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i+1]].id && this.labyrinth[this.track[i]].id-1!=this.labyrinth[this.track[i-1]].id || this.labyrinth[this.track[i]].first) {
+                    var r = this.groupLab.create(x, y, verticalBD );
+                    r.body.immovable = true;
+                }
             }
         }
+        game.physics.arcade.enable( this.groupLab );
     }
 
+    exit(joueur){
+        if((this.xBase > joueur.collide().x || (this.xBase + this.largeur) < joueur.collide().x)
+            || (this.yBase > joueur.collide().y || (this.yBase + this.hauteur) < joueur.collide().y))
+            this.findExit=true;
+    }
 
-        /*var squares = [];
+    isFindExit(){
+        return this.findExit;
+    }
 
-        for(var i = 0; i<this.getColNb() ; i++){
-            for(var u = 0; u<this.getRowNb() ; u++) {
-                var square = [];
-                var display = true;
-
-                square.push({'x': this.x, 'y': this.y});
-                if((i!=0) && (u!=0)) {
-                    //Première ligne
-                    if(!squares[i-1][3]){
-                        display = false;
-                    } else if ((u!=0) && this.randomLine()) {
-                        display = false;
-                    }
-                    square.push({'display': display, 'x': this.up(this.x), 'y': this.y});
-
-                    //Deuxième ligne
-                    //if((i+1)==this.getColNb())
-                    display = true;
-                    if ((i!=this.getColNb()) && this.randomLine()) {
-                        //display = false;
-                    }
-                    square.push({'display': display, 'x': this.up(this.x), 'y': this.up(this.y)});
-
-                    //Troisième ligne
-                    //if((u+1)==this.getRowNb())
-                    display = true;
-                    if ((i!=this.getColNb()) && this.randomLine()) {
-                        //display = false;
-                    }
-                    square.push({'display': display, 'x': this.x, 'y': this.up(this.y)});
-
-                    //Quatrième ligne
-                    //if((u+1)==this.getRowNb())
-                    display = true;
-
-                    square.push({'display': display, 'x': this.x, 'y': this.y});
-                } else {
-                    square.push({'display': true, 'x': this.up(this.x), 'y': this.y});
-                    square.push({'display': true, 'x': this.up(this.x), 'y': this.up(this.y)});
-                    square.push({'display': true, 'x': this.x, 'y': this.up(this.y)});
-                    square.push({'display': true, 'x': this.x, 'y': this.y});
-                }
-                squares.push(square);
-                this.y += this.incrementation;
-            }
-            this.y = 0;
-            this.x += this.incrementation;
-        }
-        return squares;*/
-
+    collide(){
+        return this.groupLab;
+    }
+    getXPosition(index){
+        return this.labyrinth[index].x;
+    }
+    getYPosition(index){
+        return this.labyrinth[index].y;
+    }
     randomSortie(){
         var cases = [];
         for(var i = 0; i<this.getTotalNb() ; i++) {
@@ -173,7 +197,6 @@ class labyrinth {
         }
         return cases[this.random(0, cases.length-1)];
     }
-
     getColNb(){
         return Math.floor(this.largeur/this.incrementation);
     }
@@ -189,19 +212,20 @@ class labyrinth {
     checkRowBefore(position){
         return (position-this.getRowNb()>0);
     }
-    checkCaseBefore(position){
-        return (this.getTotalNb()/position+this.getRowNb()>0);
-    }
     checkRowAfter(position){
         return (position+this.getRowNb()<this.getTotalNb());
-    }
-    checkCaseAfter(position){
-        return (position+this.getRowNb()<this.getColNb());
     }
     random(min, max) {
         return Math.floor(Math.random()*(max-min+1)+min);
     }
-    randomLine(){
-        return Math.random() >= 0.6
+    randomLine1(){
+        return Math.random() >= 0.52
+    }
+    randomLine2(){
+        return Math.random() >= 0.25
+    }
+    getMiddle(){
+        //return Math.floor(this.getTotalNb()/2);
+        return 210;
     }
 }
