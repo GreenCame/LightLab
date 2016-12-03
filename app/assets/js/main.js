@@ -34,7 +34,8 @@ function restart(){
     bonus = new Bonus(1, lab.getXPosition(randomCase), lab.getYPosition(randomCase));
     randomCase = lab.getRandomCaseForBonus();
     malus = new Bonus(2, lab.getXPosition(randomCase), lab.getYPosition(randomCase));
-
+}
+function createShadow() {
     //ombre
     shadowTexture = game.add.bitmapData(game.width, game.height);
     lightSprite = game.add.image(game.camera.x + offset, game.camera.y + offset, shadowTexture);
@@ -45,6 +46,7 @@ function create() {
     restart();
     timer = new Timer(450, 50, '#fff', 2);//x, y, color, restart
     joueur = new Player('julien','0xFF0000', 7, 150, lab.getXPosition(lab.getMiddle())-offset, lab.getYPosition(lab.getMiddle())-offset, 45);//name, color, size, speed, x, y, halo
+    createShadow();
 }
 
 function update() {
@@ -69,6 +71,7 @@ function update() {
             timer.restart();
             restart();
             joueur.replace(lab.getXPosition(lab.getMiddle())-offset, lab.getYPosition(lab.getMiddle())-offset);
+            createShadow();
             //ok GO ! :)
             wait = false;
         }, 10000);
