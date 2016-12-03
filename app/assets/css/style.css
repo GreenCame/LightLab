@@ -9,3 +9,9 @@ canvas {
     margin-left: auto;
     margin-right: auto;
 }
+#name{
+    position: absolute;
+    width: 100%;
+    margin-top: 615px;
+    text-align: center;
+}

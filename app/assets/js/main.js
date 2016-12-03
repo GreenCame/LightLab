@@ -6,32 +6,52 @@ var shadowTexture;
 var lightSprite;
 var timer;
 var wait = false;
+var bonus;
+var malus;
+var offset = 8;
 
 function preload() {
     //joueur
-    game.load.image('mushroom', 'app/assets/img/index.jpeg');
+    game.load.image('player', 'app/assets/img/perso.png');
+    game.load.image('bonus', 'app/assets/img/bonus.png');
+    game.load.image('fond', 'app/assets/img/fond.jpeg');
+    game.load.image('malus', 'app/assets/img/malus.png');
 }
+//create
+function restart(){
+    //background
+    var fond = game.add.sprite(0, 0, 'fond');
+        fond.x = 0;
+        fond.y = 0;
+        fond.height = game.height;
+        fond.width = game.width;
 
-function create() {
     //lab
     lab = new labyrinth(250, 60, 500, 500, 25, 3);//x, y, hauteur, largeur, incrementation, epaisseur
-    lab.draw();
 
-    //timer
-    timer = new Timer(450, 50, '#fff', 3);//x, y, color, restart
-
-    //joueur
-    joueur = new Player('julien','0xFF0000', 7, 150, lab.getXPosition(lab.getMiddle()), lab.getYPosition(lab.getMiddle()), 40);//name, color, size, speed, x, y, halo
+    //bonus
+    var randomCase = lab.getRandomCaseForBonus();
+    bonus = new Bonus(1, lab.getXPosition(randomCase), lab.getYPosition(randomCase));
+    randomCase = lab.getRandomCaseForBonus();
+    malus = new Bonus(2, lab.getXPosition(randomCase), lab.getYPosition(randomCase));
 
     //ombre
     shadowTexture = game.add.bitmapData(game.width, game.height);
-    lightSprite = game.add.image(game.camera.x, game.camera.y, shadowTexture);
+    lightSprite = game.add.image(game.camera.x + offset, game.camera.y + offset, shadowTexture);
     lightSprite.blendMode = Phaser.blendModes.MULTIPLY;
+}
+
+function create() {
+    restart();
+    timer = new Timer(450, 50, '#fff', 2);//x, y, color, restart
+    joueur = new Player('julien','0xFF0000', 7, 150, lab.getXPosition(lab.getMiddle())-offset, lab.getYPosition(lab.getMiddle())-offset, 45);//name, color, size, speed, x, y, halo
 }
 
 function update() {
     //Collideur between labyrinth and player
     game.physics.arcade.collide(lab.collide(), joueur.collide());
+    game.physics.arcade.overlap(joueur.collide(), bonus.collide(), overlapHandlerBonus, null, this);
+    game.physics.arcade.overlap(joueur.collide(), malus.collide(), overlapHandlerMalus, null, this);
     //player move
     joueur.move();
     //check the position of joueur with labyrinth
@@ -40,31 +60,16 @@ function update() {
     if((lab.isFindExit() || timer.isTimeFinish()) && !wait){
         //setToFinish depend of the player situation
         joueur.finish(timer.get(), lab.isFindExit());
-        //restart time
         timer.restart();
         //for wait the restart
         wait = true;
 
         //restart
         window.setTimeout(function () {
-            //Timer
             timer.restart();
-            //background
-            var black = game.add.bitmapData(game.width, game.height);
-                black.context.fillStyle = 'rgb(0, 0, 0)';
-                black.context.fillRect(0, 0, game.width, game.height);
-                black.context.beginPath();
-                black.context.fill();
-            game.add.image(game.camera.x, game.camera.y, black);
-            //lab
-            lab = new labyrinth(250, 60, 500, 500, 25, 3);//(x, y, hauteur, largeur, case)
-            lab.draw();
-            //ombre
-            shadowTexture = game.add.bitmapData(game.width, game.height);
-            lightSprite = game.add.image(game.camera.x, game.camera.y, shadowTexture);
-            lightSprite.blendMode = Phaser.blendModes.MULTIPLY;
-            joueur.replace(lab.getXPosition(lab.getMiddle()), lab.getYPosition(lab.getMiddle()));
-            //ok RESTART ! :)
+            restart();
+            joueur.replace(lab.getXPosition(lab.getMiddle())-offset, lab.getYPosition(lab.getMiddle())-offset);
+            //ok GO ! :)
             wait = false;
         }, 10000);
     }
@@ -79,12 +84,12 @@ function updateShadowTexture(){
     shadowTexture.context.fillStyle = 'rgb(0, 0, 0)';
     shadowTexture.context.fillRect(0, 0, game.width, game.height);
 
-    var radius = joueur.getHalo() + game.rnd.integerInRange(1,6);
-    var heroX = joueur.collide().x - game.camera.x;
-    var heroY = joueur.collide().y - game.camera.y;
+    var radius = joueur.getHalo() + game.rnd.integerInRange(1,6),
+        heroX = joueur.collide().x - game.camera.x + offset,
+        heroY = joueur.collide().y  - game.camera.y + offset;
 
     var gradient = shadowTexture.context.createRadialGradient(
-        heroX, heroY, joueur.getHalo()  * 0.65,
+        heroX, heroY, joueur.getHalo()  * 0.8,
         heroX, heroY, radius);
     gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
@@ -96,7 +101,17 @@ function updateShadowTexture(){
 
     shadowTexture.dirty = true;
 }
+//bonus
+function overlapHandlerBonus(obj1, obj2) {
+    joueur.setHalo(bonus.getHalo());
+    obj2.kill();
+}
+function overlapHandlerMalus(obj1, obj2) {
+    joueur.setHalo(malus.getHalo());
+    obj2.kill();
+}
 
+//text
 function render() {
     timer.draw();
     joueur.showTime(20, 25);

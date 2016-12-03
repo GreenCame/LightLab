@@ -12,6 +12,7 @@ class labyrinth {
         this.sortie = this.randomSortie();
         this.track = this.findTrack();
         this.findExit = false;
+        this.draw();
     }
 
     //create an Array
@@ -76,8 +77,8 @@ class labyrinth {
     draw(){
         var horizontalBD = game.add.bitmapData( this.incrementation, this.epaisseur ); //width, height
         var verticalBD = game.add.bitmapData( this.epaisseur, this.incrementation ); //width, height
-        horizontalBD.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alpha
-        verticalBD.fill( 255, 255, 255, 1 ); //Red, Green, Blue, Alph
+        horizontalBD.fill( 58, 42, 19, 1 ); //Red, Green, Blue, Alpha
+        verticalBD.fill( 58, 42, 19, 1 ); //Red, Green, Blue, Alph
 
         //debug track make the track in red
         /*var horizontalBD2 = game.add.bitmapData( this.incrementation, this.epaisseur ); //width, height
@@ -236,6 +237,9 @@ class labyrinth {
     //random
     random(min, max) {
         return Math.floor(Math.random()*(max-min+1)+min);
+    }
+    getRandomCaseForBonus() {
+        return this.random(0, this.labyrinth.length);
     }
     randomLine1(){
         return Math.random() >= 0.52

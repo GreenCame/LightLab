@@ -1,12 +1,13 @@
 class Player {
     constructor (name, color, size, speed, x, y, halo) {
+        this.haloOffset = 400;
         this.name = name;
         this.color = color;
         this.size = size;
         this.x = x;
         this.y = y;
         this.speed = speed;
-        this.halo = halo;
+        this.halo = halo+this.haloOffset;
         this.haloBase = halo;
         this.essais = 1;
         this.reussite = 0;
@@ -15,8 +16,8 @@ class Player {
 
     create(x, y) {
         //sprite
-        this.player = game.add.sprite( x ,  y , 'mushroom');
-        this.player.name = 'mushroom';
+        this.player = game.add.sprite( x ,  y , 'player');
+        this.player.name = 'player';
         //this.player.scale.setTo(0.05, 0.05);
 
         //phaser
@@ -40,14 +41,14 @@ class Player {
     replace (x, y) {
         this.essais++;
         this.create(x,y);
-        this.setHalo(this.haloBase);
+        this.setHalo(this.haloBase+this.haloOffset);
     }
 
     finish(time, save){
         this.player.body.velocity.x = 0;
         this.player.body.velocity.y = 0;
 
-        this.setHalo(1000);
+        this.setHalo(10000);
 
         if(save){
             this.reussite++;
@@ -62,6 +63,12 @@ class Player {
     }
 
     move() {
+        if(this.halo>this.haloBase){
+            this.halo-=3;
+        } else if (this.halo<this.haloBase) {
+            this.halo+=0.1;
+        }
+
         this.player.body.velocity.x = 0;
         this.player.body.velocity.y = 0;
         if (this.cursors.left.isDown) {
