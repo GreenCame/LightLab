@@ -18,10 +18,10 @@ function create() {
     lab.draw();
 
     //timer
-    timer = new Timer(450, 50, '#fff', 5);//x, y, color, restart
+    timer = new Timer(450, 50, '#fff', 3);//x, y, color, restart
 
     //joueur
-    joueur = new Player('julien','0xFF0000', 7, 120, lab.getXPosition(lab.getMiddle()), lab.getYPosition(lab.getMiddle()), 40);//name, color, size, speed, x, y, halo
+    joueur = new Player('julien','0xFF0000', 7, 150, lab.getXPosition(lab.getMiddle()), lab.getYPosition(lab.getMiddle()), 40);//name, color, size, speed, x, y, halo
 
     //ombre
     shadowTexture = game.add.bitmapData(game.width, game.height);
@@ -66,7 +66,7 @@ function update() {
             joueur.replace(lab.getXPosition(lab.getMiddle()), lab.getYPosition(lab.getMiddle()));
             //ok RESTART ! :)
             wait = false;
-        }, 5000);
+        }, 10000);
     }
 
     //ombre
